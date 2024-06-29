@@ -6,12 +6,11 @@ local Camera = workspace.CurrentCamera
 local maxDistance = 1000
 local updateInterval = 0.1
 
-if _G.ShowNames == nil then _G.ShowNames = false end
-if _G.ShowDistance == nil then _G.ShowDistance = false end
+_G.Settings = _G.Settings or { ShowNames = false, ShowDistance = false }
 
 local function createBox()
     local box = Drawing.new("Square")
-    box.Thickness = 2
+    box.Thickness = 1
     box.Transparency = 1
     box.Filled = false
     box.Color = Color3.fromRGB(255, 0, 0)
@@ -66,12 +65,12 @@ local function updateESP()
                         elements.box.Position = position
                         elements.box.Visible = true
 
-                        if _G.ShowNames then
+                        if _G.Settings.ShowNames then
                             elements.name.Text = player.Name
                             elements.name.Position = Vector2.new(screenPosition.X, position.Y - 20)
                             elements.name.Visible = true
 
-                            if _G.ShowDistance then
+                            if _G.Settings.ShowDistance then
                                 elements.distance.Text = string.format("%.1f meters", distance)
                                 elements.distance.Position = Vector2.new(screenPosition.X, position.Y + size.Y + 2) -- Adjusted position to be right below the box
                                 elements.distance.Visible = true
