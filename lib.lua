@@ -3,11 +3,12 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- Settings
-local maxDistance = 1000  -- Maximum distance to show ESP boxes
-local updateInterval = 0.1  -- Update interval in seconds
+local maxDistance = 1000
+local updateInterval = 0.1
 
--- Function to create a new Drawing object for a box
+_G.ShowNames = _G.ShowNames or true
+_G.ShowDistance = _G.ShowDistance or true
+
 local function createBox()
     local box = Drawing.new("Square")
     box.Thickness = 2
@@ -17,7 +18,16 @@ local function createBox()
     return box
 end
 
-local boxes = {}
+local function createText()
+    local text = Drawing.new("Text")
+    text.Size = 16
+    text.Center = true
+    text.Outline = true
+    text.Color = Color3.fromRGB(255, 255, 255)
+    return text
+end
+
+local espElements = {}
 
 local function isTeammate(player)
     if LocalPlayer.Team then
@@ -37,33 +47,59 @@ local function updateESP()
             if rootPart and humanoid and humanoid.Health > 0 then
                 local distance = (LocalPlayer.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
                 if distance < maxDistance then
-                    
                     local screenPosition, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
                     
                     if onScreen then
-                        
                         local size = Vector2.new(1000 / screenPosition.Z, 2000 / screenPosition.Z)
                         local position = Vector2.new(screenPosition.X - size.X / 2, screenPosition.Y - size.Y / 2)
                         
-                        
-                        if not boxes[player] then
-                            boxes[player] = createBox()
+                        if not espElements[player] then
+                            espElements[player] = {
+                                box = createBox(),
+                                name = createText(),
+                                distance = createText()
+                            }
                         end
-                        local box = boxes[player]
-                        box.Size = size
-                        box.Position = position
-                        box.Visible = true
-                    elseif boxes[player] then
-                        boxes[player].Visible = false
+                        local elements = espElements[player]
+
+                        elements.box.Size = size
+                        elements.box.Position = position
+                        elements.box.Visible = true
+
+                        if _G.ShowNames then
+                            elements.name.Text = player.Name
+                            elements.name.Position = Vector2.new(screenPosition.X, screenPosition.Y - size.Y / 2 - 20)
+                            elements.name.Visible = true
+                        else
+                            elements.name.Visible = false
+                        end
+
+                        if _G.ShowDistance then
+                            elements.distance.Text = string.format("%.0f studs", distance)
+                            elements.distance.Position = Vector2.new(screenPosition.X, screenPosition.Y + size.Y / 2 + 10)
+                            elements.distance.Visible = true
+                        else
+                            elements.distance.Visible = false
+                        end
+                    elseif espElements[player] then
+                        espElements[player].box.Visible = false
+                        espElements[player].name.Visible = false
+                        espElements[player].distance.Visible = false
                     end
-                elseif boxes[player] then
-                    boxes[player].Visible = false
+                elseif espElements[player] then
+                    espElements[player].box.Visible = false
+                    espElements[player].name.Visible = false
+                    espElements[player].distance.Visible = false
                 end
-            elseif boxes[player] then
-                boxes[player].Visible = false
+            elseif espElements[player] then
+                espElements[player].box.Visible = false
+                espElements[player].name.Visible = false
+                espElements[player].distance.Visible = false
             end
-        elseif boxes[player] then
-            boxes[player].Visible = false
+        elseif espElements[player] then
+            espElements[player].box.Visible = false
+            espElements[player].name.Visible = false
+            espElements[player].distance.Visible = false
         end
     end
 end
@@ -74,8 +110,10 @@ RunService.RenderStepped:Connect(function()
 end)
 
 Players.PlayerRemoving:Connect(function(player)
-    if boxes[player] then
-        boxes[player]:Remove()
-        boxes[player] = nil
+    if espElements[player] then
+        espElements[player].box:Remove()
+        espElements[player].name:Remove()
+        espElements[player].distance:Remove()
+        espElements[player] = nil
     end
 end)
