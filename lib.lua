@@ -6,8 +6,8 @@ local Camera = workspace.CurrentCamera
 local maxDistance = 1000
 local updateInterval = 0.1
 
-if _G.ShowNames == nil then _G.ShowNames = true end
-if _G.ShowDistance == nil then _G.ShowDistance = true end
+if _G.ShowNames == nil then _G.ShowNames = false end
+if _G.ShowDistance == nil then _G.ShowDistance = false end
 
 local function createBox()
     local box = Drawing.new("Square")
@@ -18,9 +18,9 @@ local function createBox()
     return box
 end
 
-local function createText()
+local function createText(size)
     local text = Drawing.new("Text")
-    text.Size = 16
+    text.Size = size
     text.Center = true
     text.Outline = true
     text.Color = Color3.fromRGB(255, 255, 255)
@@ -45,7 +45,7 @@ local function updateESP()
             local humanoid = character:FindFirstChildOfClass("Humanoid")
 
             if rootPart and humanoid and humanoid.Health > 0 then
-                local distance = (LocalPlayer.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
+                local distance = (LocalPlayer.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude * 0.28
                 if distance < maxDistance then
                     local screenPosition, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
                     
@@ -56,8 +56,8 @@ local function updateESP()
                         if not espElements[player] then
                             espElements[player] = {
                                 box = createBox(),
-                                name = createText(),
-                                distance = createText()
+                                name = createText(14),
+                                distance = createText(12)
                             }
                         end
                         local elements = espElements[player]
@@ -68,17 +68,18 @@ local function updateESP()
 
                         if _G.ShowNames then
                             elements.name.Text = player.Name
-                            elements.name.Position = Vector2.new(screenPosition.X, screenPosition.Y - size.Y / 2 - 20)
+                            elements.name.Position = Vector2.new(screenPosition.X, position.Y - 20)
                             elements.name.Visible = true
+
+                            if _G.ShowDistance then
+                                elements.distance.Text = string.format("%.1f meters", distance)
+                                elements.distance.Position = Vector2.new(screenPosition.X, position.Y + size.Y + 2) -- Adjusted position to be right below the box
+                                elements.distance.Visible = true
+                            else
+                                elements.distance.Visible = false
+                            end
                         else
                             elements.name.Visible = false
-                        end
-
-                        if _G.ShowDistance then
-                            elements.distance.Text = string.format("%.0f studs", distance)
-                            elements.distance.Position = Vector2.new(screenPosition.X, screenPosition.Y + size.Y / 2 + 10)
-                            elements.distance.Visible = true
-                        else
                             elements.distance.Visible = false
                         end
                     elseif espElements[player] then
