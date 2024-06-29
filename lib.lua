@@ -7,6 +7,7 @@ local Camera = workspace.CurrentCamera
 local maxDistance = 1000  -- Maximum distance to show ESP boxes
 local updateInterval = 0.1  -- Update interval in seconds
 
+-- Function to create a new Drawing object for a box
 local function createBox()
     local box = Drawing.new("Square")
     box.Thickness = 2
@@ -18,9 +19,17 @@ end
 
 local boxes = {}
 
+local function isTeammate(player)
+    if LocalPlayer.Team then
+        return player.Team == LocalPlayer.Team
+    else
+        return false
+    end
+end
+
 local function updateESP()
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        if player ~= LocalPlayer and not isTeammate(player) and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local character = player.Character
             local rootPart = character:FindFirstChild("HumanoidRootPart")
             local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -32,9 +41,10 @@ local function updateESP()
                     local screenPosition, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
                     
                     if onScreen then
-                    
+                        
                         local size = Vector2.new(1000 / screenPosition.Z, 2000 / screenPosition.Z)
                         local position = Vector2.new(screenPosition.X - size.X / 2, screenPosition.Y - size.Y / 2)
+                        
                         
                         if not boxes[player] then
                             boxes[player] = createBox()
