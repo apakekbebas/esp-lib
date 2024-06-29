@@ -6,8 +6,8 @@ local Camera = workspace.CurrentCamera
 local maxDistance = 1000
 local updateInterval = 0.1
 
-_G.ShowNames = _G.ShowNames or true
-_G.ShowDistance = _G.ShowDistance or true
+if _G.ShowNames == nil then _G.ShowNames = true end
+if _G.ShowDistance == nil then _G.ShowDistance = true end
 
 local function createBox()
     local box = Drawing.new("Square")
@@ -106,7 +106,6 @@ end
 
 RunService.RenderStepped:Connect(function()
     updateESP()
-    wait(updateInterval)
 end)
 
 Players.PlayerRemoving:Connect(function(player)
